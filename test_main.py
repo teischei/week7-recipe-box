@@ -80,6 +80,17 @@ def test_scale_recipe_rejects_zero_factor():
     assert r.status_code == 422
 
 
+def test_scale_recipe_with_fractional_factor():
+    recipe = client.post(
+        "/recipes", json={"title": "Bread", "ingredients": ["200 g flour"]}
+    )
+
+    r = client.get(f"/recipes/{recipe.json()['id']}/scaled?factor=0.5")
+
+    assert r.status_code == 200
+    assert r.json()["ingredients"] == ["100 g flour"]
+
+
 def test_shopping_list_merges_unique_ingredients():
     first = client.post(
         "/recipes",
