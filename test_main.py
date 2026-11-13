@@ -48,6 +48,49 @@ def test_unknown_recipe_404():
     assert r.status_code == 404
 
 
+def test_scale_recipe_ingredients():
+    recipe = client.post(
+        "/recipes",
+        json={
+            "title": "Soup",
+            "ingredients": ["200 g tomatoes", "1 cup broth"],
+            "tags": ["dinner"],
+        },
+    )
+
+    r = client.get(f"/recipes/{recipe.json()['id']}/scaled?factor=2")
+
+    assert r.status_code == 200
+    assert r.json()["id"] == recipe.json()["id"]
+    assert r.json()["title"] == "Soup"
+    assert r.json()["tags"] == ["dinner"]
+    assert r.json()["ingredients"] == ["400 g tomatoes", "2 cup broth"]
+
+
+def test_scale_unknown_recipe_404():
+    r = client.get("/recipes/99999/scaled?factor=2")
+    assert r.status_code == 404
+
+
+def test_scale_recipe_rejects_zero_factor():
+    recipe = client.post("/recipes", json={"title": "Rice", "ingredients": ["1 cup rice"]})
+
+    r = client.get(f"/recipes/{recipe.json()['id']}/scaled?factor=0")
+
+    assert r.status_code == 422
+
+
+def test_scale_recipe_with_fractional_factor():
+    recipe = client.post(
+        "/recipes", json={"title": "Bread", "ingredients": ["200 g flour"]}
+    )
+
+    r = client.get(f"/recipes/{recipe.json()['id']}/scaled?factor=0.5")
+
+    assert r.status_code == 200
+    assert r.json()["ingredients"] == ["100 g flour"]
+
+
 def test_shopping_list_merges_unique_ingredients():
     first = client.post(
         "/recipes",
