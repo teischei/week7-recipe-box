@@ -13,6 +13,9 @@ uvicorn main:app --reload   # http://localhost:8000  (UI at /, docs at /docs)
 ## Endpoints
 - `POST /recipes` `{ "title": ..., "ingredients": [...], "tags": [...] }`
 - `GET /recipes`, `GET /recipes/{id}`
+- `GET /recipes?tag=breakfast`
+- `GET /shopping-list?ids=1,2,3`
+- `GET /recipes/{id}/scaled?factor=2`
 
 ## Parallel work with git worktrees
 ```bash
@@ -25,3 +28,4 @@ git worktree add ../recipe-task-b -b task-b
 - `static/index.html` — minimal UI
 - `test_main.py` — pytest suite
 - `docs/TASKS.md` — independent tasks (safe to run in parallel)
+- `docs/orchestration/` — notes and transcript from the Week 7 agent work
