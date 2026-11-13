@@ -25,6 +25,24 @@ def test_list_recipes():
     assert any(rec["title"] == "Toast" for rec in r.json())
 
 
+def test_list_recipes_by_tag():
+    breakfast = client.post(
+        "/recipes",
+        json={"title": "Week 7 Pancakes", "tags": ["week7-breakfast"]},
+    )
+    dinner = client.post(
+        "/recipes",
+        json={"title": "Week 7 Pasta", "tags": ["week7-dinner"]},
+    )
+
+    r = client.get("/recipes?tag=week7-breakfast")
+
+    assert r.status_code == 200
+    recipe_ids = [recipe["id"] for recipe in r.json()]
+    assert breakfast.json()["id"] in recipe_ids
+    assert dinner.json()["id"] not in recipe_ids
+
+
 def test_unknown_recipe_404():
     r = client.get("/recipes/99999")
     assert r.status_code == 404
