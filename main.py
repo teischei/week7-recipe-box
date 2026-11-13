@@ -100,6 +100,9 @@ def get_recipe(recipe_id: int):
 
 @app.get("/recipes/{recipe_id}/scaled")
 def get_scaled_recipe(recipe_id: int, factor: float):
+    if factor <= 0:
+        raise HTTPException(status_code=422, detail="factor must be greater than zero")
+
     with closing(get_db()) as conn:
         row = conn.execute("SELECT * FROM recipes WHERE id = ?", (recipe_id,)).fetchone()
     if row is None:
