@@ -48,6 +48,28 @@ def test_unknown_recipe_404():
     assert r.status_code == 404
 
 
+def test_scale_recipe_ingredients():
+    recipe = client.post(
+        "/recipes",
+        json={
+            "title": "Soup",
+            "ingredients": ["200 g tomatoes", "1 cup broth"],
+            "tags": ["dinner"],
+        },
+    )
+
+    r = client.get(f"/recipes/{recipe.json()['id']}/scaled?factor=2")
+
+    assert r.status_code == 200
+    assert r.json()["title"] == "Soup"
+    assert r.json()["ingredients"] == ["400 g tomatoes", "2 cup broth"]
+
+
+def test_scale_unknown_recipe_404():
+    r = client.get("/recipes/99999/scaled?factor=2")
+    assert r.status_code == 404
+
+
 def test_shopping_list_merges_unique_ingredients():
     first = client.post(
         "/recipes",

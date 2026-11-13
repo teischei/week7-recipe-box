@@ -98,6 +98,22 @@ def get_recipe(recipe_id: int):
     return _row_to_recipe(row)
 
 
+@app.get("/recipes/{recipe_id}/scaled")
+def get_scaled_recipe(recipe_id: int, factor: float):
+    with closing(get_db()) as conn:
+        row = conn.execute("SELECT * FROM recipes WHERE id = ?", (recipe_id,)).fetchone()
+    if row is None:
+        raise HTTPException(status_code=404, detail="unknown recipe")
+
+    recipe = _row_to_recipe(row)
+    scaled_ingredients = []
+    for ingredient in recipe["ingredients"]:
+        quantity, unit, name = ingredient.split(" ", 2)
+        scaled_quantity = float(quantity) * factor
+        scaled_ingredients.append(f"{scaled_quantity:g} {unit} {name}")
+    return {**recipe, "ingredients": scaled_ingredients}
+
+
 @app.get("/shopping-list")
 def shopping_list(ids: str):
     try:
