@@ -28,3 +28,27 @@ def test_list_recipes():
 def test_unknown_recipe_404():
     r = client.get("/recipes/99999")
     assert r.status_code == 404
+
+
+def test_shopping_list_merges_unique_ingredients():
+    first = client.post(
+        "/recipes",
+        json={"title": "Pancakes", "ingredients": ["flour", "milk", "eggs"]},
+    )
+    second = client.post(
+        "/recipes",
+        json={"title": "French toast", "ingredients": ["bread", "milk", "eggs"]},
+    )
+
+    r = client.get(
+        "/shopping-list",
+        params={"ids": f"{first.json()['id']},{second.json()['id']},{first.json()['id']},99999"},
+    )
+
+    assert r.status_code == 200
+    assert r.json() == {"ingredients": ["flour", "milk", "eggs", "bread"]}
+
+
+def test_shopping_list_rejects_non_numeric_ids():
+    r = client.get("/shopping-list", params={"ids": "one,two"})
+    assert r.status_code == 422

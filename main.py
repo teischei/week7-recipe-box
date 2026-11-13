@@ -93,3 +93,22 @@ def get_recipe(recipe_id: int):
     if row is None:
         raise HTTPException(status_code=404, detail="unknown recipe")
     return _row_to_recipe(row)
+
+
+@app.get("/shopping-list")
+def shopping_list(ids: str):
+    try:
+        recipe_ids = [int(recipe_id.strip()) for recipe_id in ids.split(",") if recipe_id.strip()]
+    except ValueError:
+        raise HTTPException(status_code=422, detail="ids must be recipe numbers") from None
+
+    ingredients = []
+    with closing(get_db()) as conn:
+        for recipe_id in recipe_ids:
+            row = conn.execute("SELECT * FROM recipes WHERE id = ?", (recipe_id,)).fetchone()
+            if row is None:
+                continue
+            for ingredient in json.loads(row["ingredients"]):
+                if ingredient not in ingredients:
+                    ingredients.append(ingredient)
+    return {"ingredients": ingredients}
